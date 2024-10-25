@@ -27,10 +27,6 @@ def run_query(query):
         rows = cur.fetchall()  # 결과 가져오기
         return rows, columns  # 결과와 컬럼 이름 반환
 
-# 사용자 입력을 위한 Streamlit 위젯
-# st.title("CJ 3PL")
-
-
 st.markdown(
     """
     <style>
@@ -109,20 +105,21 @@ with tab1:
         ')
         """
         # 쿼리 실행
-        rows, columns = run_query(query)
+        try:
+            rows, columns = run_query(query)
 
-        # 결과를 리스트에 담기
-        data = []
-        for row in rows:
-            row_dict = {columns[i]: row[i] for i in range(len(columns))}
-            data.append(row_dict)
+            # 결과를 리스트에 담기
+            data = []
+            for row in rows:
+                row_dict = {columns[i]: row[i] for i in range(len(columns))}
+                data.append(row_dict)
 
-        df = pd.DataFrame(data)
-
-        
-        
-        st.dataframe(df, height=600)
-
+            df = pd.DataFrame(data)
+            st.dataframe(df, height=600)
+        except KeyError as e:
+            st.error(f"키 에러 발생 : {e}") #오류 메시지 표시
+        except Exception as e:
+            st.error(f"오류 발생: {e}") #다른 오류 처리
 
 
 
@@ -136,63 +133,63 @@ with tab1:
 
 
 
-with tab2:
-    # 첫 번째 탭에 내용 추가
-    st.header("Tab 2")
-    st.write("여기에 Tab 2의 내용을 추가하세요.")
+# with tab2:
+#     # 첫 번째 탭에 내용 추가
+#     st.header("Tab 2")
+#     st.write("여기에 Tab 2의 내용을 추가하세요.")
 
-    # 현재 날짜를 기본값으로 설정
-    today = pd.to_datetime("today").date()
+#     # 현재 날짜를 기본값으로 설정
+#     today = pd.to_datetime("today").date()
 
-    # 두 개의 열을 생성하여 입력 필드를 배치
-    col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12 = st.columns(12)
+#     # 두 개의 열을 생성하여 입력 필드를 배치
+#     col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11, col12 = st.columns(12)
 
-    with col1:
-        start_date = st.date_input("시작 날짜 입력", value=pd.to_datetime("2024-07-22"))  # 기본 날짜 설정
-    with col2:
-        end_date = st.date_input("종료 날짜 입력", value=today)  # 기본 날짜 설정
+#     with col1:
+#         start_date = st.date_input("시작 날짜 입력", value=pd.to_datetime("2024-07-22"))  # 기본 날짜 설정
+#     with col2:
+#         end_date = st.date_input("종료 날짜 입력", value=today)  # 기본 날짜 설정
 
 
-    query = """
-    SELECT * from openquery(CJ_3PL, '
-        SELECT SUBSTR(ADDDATE, 1, 8) AS 전송일,
-                COUNT(*) AS 연동라인수, 
-                SUM(CASE WHEN TRANSSTATE = ''Y'' THEN 1 ELSE 0 END) AS CJ확인,
-                SUM(CASE WHEN TRANSSTATE = ''N'' THEN 1 ELSE 0 END) AS CJ미확인,
-                SUM(CASE WHEN RSLTSTATE = ''Y'' THEN 1 ELSE 0 END) AS CJ출고,
-                SUM(CASE WHEN READSTATE = ''Y'' THEN 1 ELSE 0 END) AS CLOUD전송,
-                COUNT(CASE WHEN RSLTSTATE = ''Y'' AND SHIPQTY != ''0'' THEN 1 END) AS 매출,
-                COUNT(CASE WHEN RSLTSTATE = ''Y'' AND SHIPQTY = ''0'' THEN 1 END) AS 결품,
-                SUM(CASE WHEN RSLTSTATE = ''N'' THEN 1 ELSE 0 END) AS CJ미출고
-        FROM P1_V_ORDERS
-        GROUP BY SUBSTR(ADDDATE, 1, 8)
-        ORDER BY SUBSTR(ADDDATE, 1, 8) DESC
-    ')
-    """
+#     query = """
+#     SELECT * from openquery(CJ_3PL, '
+#         SELECT SUBSTR(ADDDATE, 1, 8) AS 전송일,
+#                 COUNT(*) AS 연동라인수, 
+#                 SUM(CASE WHEN TRANSSTATE = ''Y'' THEN 1 ELSE 0 END) AS CJ확인,
+#                 SUM(CASE WHEN TRANSSTATE = ''N'' THEN 1 ELSE 0 END) AS CJ미확인,
+#                 SUM(CASE WHEN RSLTSTATE = ''Y'' THEN 1 ELSE 0 END) AS CJ출고,
+#                 SUM(CASE WHEN READSTATE = ''Y'' THEN 1 ELSE 0 END) AS CLOUD전송,
+#                 COUNT(CASE WHEN RSLTSTATE = ''Y'' AND SHIPQTY != ''0'' THEN 1 END) AS 매출,
+#                 COUNT(CASE WHEN RSLTSTATE = ''Y'' AND SHIPQTY = ''0'' THEN 1 END) AS 결품,
+#                 SUM(CASE WHEN RSLTSTATE = ''N'' THEN 1 ELSE 0 END) AS CJ미출고
+#         FROM P1_V_ORDERS
+#         GROUP BY SUBSTR(ADDDATE, 1, 8)
+#         ORDER BY SUBSTR(ADDDATE, 1, 8) DESC
+#     ')
+#     """
 
-    # 쿼리 실행
-    rows, columns = run_query(query)
+#     # 쿼리 실행
+#     rows, columns = run_query(query)
 
-    # 결과를 리스트에 담기 (각 행을 딕셔너리로 변환)
-    data = []
-    for row in rows:
-        row_dict = {columns[i]: row[i] for i in range(len(columns))}  # 각 행을 딕셔너리로 변환
-        data.append(row_dict)  # 딕셔너리를 리스트에 추가
+#     # 결과를 리스트에 담기 (각 행을 딕셔너리로 변환)
+#     data = []
+#     for row in rows:
+#         row_dict = {columns[i]: row[i] for i in range(len(columns))}  # 각 행을 딕셔너리로 변환
+#         data.append(row_dict)  # 딕셔너리를 리스트에 추가
 
-    # 리스트를 DataFrame으로 변환
-    df = pd.DataFrame(data)
+#     # 리스트를 DataFrame으로 변환
+#     df = pd.DataFrame(data)
 
-    # 퍼센트 계산 (예: CJ확인 비율)
-    df['3PL출고율'] = (df['CJ출고'] / df['연동라인수'] * 100).round(1)
+#     # 퍼센트 계산 (예: CJ확인 비율)
+#     df['3PL출고율'] = (df['CJ출고'] / df['연동라인수'] * 100).round(1)
 
-    # 퍼센트 값에 '%' 붙이기
-    df['3PL출고율'] = df['3PL출고율'].astype(str) + '%'  # 문자열로 변환하고 '%' 추가
+#     # 퍼센트 값에 '%' 붙이기
+#     df['3PL출고율'] = df['3PL출고율'].astype(str) + '%'  # 문자열로 변환하고 '%' 추가
 
-    # 결과를 Streamlit으로 표시
-    st.dataframe(df)
+#     # 결과를 Streamlit으로 표시
+#     st.dataframe(df)
 
-    # 퍼센트 비율을 시각화
-    st.bar_chart(df.set_index('전송일')['3PL출고율'])
+#     # 퍼센트 비율을 시각화
+#     st.bar_chart(df.set_index('전송일')['3PL출고율'])
 
 
 
